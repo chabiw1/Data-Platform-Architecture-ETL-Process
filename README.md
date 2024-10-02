@@ -65,5 +65,3 @@ SoftCart utilizes a hybrid data platform architecture combining on-premises and 
 ├── setup_mysql.sh          # Script for setting up the MySQL server
 ├── setup_postgresql.sh     # Script for setting up the PostgreSQL staging warehouse
 ├── cronjob_config          # Example configuration for setting up a cron job
-├── data/                   # Directory for storing input CSV files
-└── output/                 # Directory for storing exported CSV files
