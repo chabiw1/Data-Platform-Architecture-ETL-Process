@@ -51,7 +51,44 @@ tr '\t' ',' < /home/project/sales.csv > /home/project/temp_sales_commas.csv
 mv /home/project/temp_sales_commas.csv /home/project/sales.csv
 ```
 - **Transform**: Data is loaded into PostgreSQL, and then transformation steps create the `DimDate` (dimension table) and `FactSales` (fact table).
+```
+# Transform the sales_data table into DimDate
+psql --username=postgres --host=postgres --dbname=sales_new -c \
+"INSERT INTO DimDate (dateid, year, month, day)
+SELECT DISTINCT
+    EXTRACT(EPOCH FROM timestamp)::bigint AS dateid,
+    EXTRACT(YEAR FROM timestamp) AS year,
+    EXTRACT(MONTH FROM timestamp) AS month,
+    EXTRACT(DAY FROM timestamp) AS day
+FROM sales_data;"
+
+# Transform the sales_data table into FactSales
+psql --username=postgres --host=postgres --dbname=sales_new -c \
+"INSERT INTO FactSales (rowid, product_id, customer_id, price, total_price)
+SELECT 
+    rowid, 
+    product_id, 
+    customer_id,
+    price,
+    price * quantity AS total_price
+FROM sales_data;"
+```
 - **Load**: Data is exported from PostgreSQL into CSV files (`DimDate.csv` and `FactSales.csv`), which can later be transferred to the DB2 production warehouse.
+  ```
+  # Load data into PostgreSQL sales_data table
+psql --username=postgres --host=postgres --dbname=sales_new -c "\COPY sales_data(rowid, product_id, customer_id, price, quantity, timestamp) FROM '/home/project/sales.csv' DELIMITER ',' CSV HEADER;"
+
+# Remove the sales.csv file after loading it into PostgreSQL
+rm /home/project/sales.csv
+
+# Export DimDate table to a CSV file
+psql --username=postgres --host=postgres --dbname=sales_new -c \
+"\COPY DimDate TO '/home/project/DimDate.csv' DELIMITER ',' CSV HEADER;"
+
+# Export FactSales table to a CSV file
+psql --username=postgres --host=postgres --dbname=sales_new -c \
+"\COPY FactSales TO '/home/project/FactSales.csv' DELIMITER ',' CSV HEADER;"
+  ```
 
 ### 4. **Automation and Cron Job**:
 - A cron job is used to automate the ETL process, ensuring that data is regularly synchronized between MySQL and PostgreSQL, and ultimately to DB2 for analysis.
