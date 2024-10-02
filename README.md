@@ -42,7 +42,8 @@ I utilize a hybrid data platform architecture combining on-premises and cloud-ba
 ```
 # Extract data from the sales_data table in MySQL and save to sales.csv
 mysql -h mysql -P 3306 -u root --password=BcXbyVICQWRxVsYUAEmoL9Cn --database=sales \
---execute="SELECT rowid, product_id, customer_id, price, quantity, timestamp FROM sales_data WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL 4 HOUR;" \
+--execute="SELECT rowid,product_id,customer_id,price,quantity,timestamp \
+          FROM sales_data WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL 4 HOUR;" \
 --batch --silent > /home/project/sales.csv
 
 # Replace tabs with commas to format as CSV
