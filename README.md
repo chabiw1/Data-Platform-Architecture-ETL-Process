@@ -5,7 +5,11 @@ This project outlines the data platform architecture for an e-commerce company, 
 
 
 
+
+
 ![Uploading image.png…]()
+
+
 
 
 
