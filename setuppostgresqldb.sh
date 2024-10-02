@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export PGPASSWORD=zpwNDa2ZwhV6eS508468DBwx
+export PGPASSWORD=PGPASSWORD
 
 psql --username=postgres --host=postgres -c "create database sales_new;"
 
