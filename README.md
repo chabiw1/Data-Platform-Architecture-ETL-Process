@@ -76,7 +76,9 @@ FROM sales_data;"
 - **Load**: Data is exported from PostgreSQL into CSV files (`DimDate.csv` and `FactSales.csv`), which can later be transferred to the DB2 production warehouse.
 ```
 # Load data into PostgreSQL sales_data table
-psql --username=postgres --host=postgres --dbname=sales_new -c "\COPY sales_data(rowid, product_id, customer_id, price, quantity, timestamp) FROM '/home/project/sales.csv' DELIMITER ',' CSV HEADER;"
+psql --username=postgres --host=postgres --dbname=sales_new -c "\
+\COPY sales_data(rowid, product_id, customer_id, price, quantity, timestamp)\
+FROM '/home/project/sales.csv' DELIMITER ',' CSV HEADER;"
 
 # Remove the sales.csv file after loading it into PostgreSQL
 rm /home/project/sales.csv
