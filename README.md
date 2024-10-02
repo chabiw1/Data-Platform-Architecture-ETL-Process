@@ -1,4 +1,4 @@
-# Data Platform Architecture - ETL Process
+# Ecommerch Data Platform Architecture  - ETL Process
 
 This project outlines the data platform architecture for an e-commerce company, and provides a detailed overview of how we synchronize data between various databases through an automated ETL (Extract, Transform, Load) process.
 
