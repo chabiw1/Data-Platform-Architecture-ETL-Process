@@ -1,7 +1,10 @@
 #!/bin/sh
 
+# Load database credentials
+. /path/to/db_credentials.sh
+
 # Load the data from the sales_data table in MySQL to a sales.csv file, selecting data not older than 4 hours from the current time.
-mysql -h mysql -P 3306 -u root --password=BcXbyVICQWRxVsYUAEmoL9Cn --database=sales \
+mysql -h mysql -P 3306 -u root --password=$MYSQL_PASSWORD --database=sales \
 --execute="SELECT rowid, product_id, customer_id, price, quantity, timestamp FROM sales_data WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL 4 HOUR;" \
 --batch --silent > /home/project/sales.csv
 
@@ -12,7 +15,7 @@ tr '\t' ',' < /home/project/sales.csv > /home/project/temp_sales_commas.csv
 mv /home/project/temp_sales_commas.csv /home/project/sales.csv
 
 # Set the PostgreSQL password environment variable
-export PGPASSWORD=zpwNDa2ZwhV6eS508468DBwx
+export PGPASSWORD=$PGPASSWORD
 
 # Load the data into the sales_data table in PostgreSQL
 psql --username=postgres --host=postgres --dbname=sales_new -c "\COPY sales_data(rowid, product_id, customer_id, price, quantity, timestamp) FROM '/home/project/sales.csv' DELIMITER ',' CSV HEADER;"
