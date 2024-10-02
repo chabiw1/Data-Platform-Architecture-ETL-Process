@@ -59,10 +59,7 @@ i utilize a hybrid data platform architecture combining on-premises and cloud-ba
 ## Repository Structure
 
 ```bash
-.
-├── ETL.sh                  # Shell script for the ETL process
-├── setup_mysql.sh          # Script for setting up the MySQL server
-├── setup_postgresql.sh     # Script for setting up the PostgreSQL staging warehouse
-├── cronjob_config          # Example configuration for setting up a cron job
-├── data/                   # Directory for storing input CSV files
-└── output/                 # Directory for storing exported CSV files
+├── ETL.sh                 # Shell script for the ETL process
+├── setupmysql.sh          # Script for setting up the MySQL server
+├── setuppostgresql.sh     # Script for setting up the PostgreSQL staging warehouse
+├── cronjob_config         # Example configuration for setting up a cron job
