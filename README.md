@@ -39,6 +39,16 @@ I utilize a hybrid data platform architecture combining on-premises and cloud-ba
 ### 3. **ETL Process**:
 - The ETL process is automated using the `ETL.sh` script.
 - **Extract**: Data is extracted from the MySQL database, focusing on transactions not older than 4 hours.
+```
+# Extract data from the sales_data table in MySQL and save to sales.csv
+mysql -h mysql -P 3306 -u root --password=BcXbyVICQWRxVsYUAEmoL9Cn --database=sales \
+--execute="SELECT rowid, product_id, customer_id, price, quantity, timestamp FROM sales_data WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL 4 HOUR;" \
+--batch --silent > /home/project/sales.csv
+
+# Replace tabs with commas to format as CSV
+tr '\t' ',' < /home/project/sales.csv > /home/project/temp_sales_commas.csv
+mv /home/project/temp_sales_commas.csv /home/project/sales.csv
+```
 - **Transform**: Data is loaded into PostgreSQL, and then transformation steps create the `DimDate` (dimension table) and `FactSales` (fact table).
 - **Load**: Data is exported from PostgreSQL into CSV files (`DimDate.csv` and `FactSales.csv`), which can later be transferred to the DB2 production warehouse.
 
