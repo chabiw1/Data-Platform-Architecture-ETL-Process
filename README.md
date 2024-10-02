@@ -1,0 +1,1 @@
+# SoftCart-Data-Platform-Architecture-ETL-Process
