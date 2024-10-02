@@ -3,14 +3,7 @@
 This project outlines the data platform architecture for an e-commerce company, and provides a detailed overview of how we synchronize data between various databases through an automated ETL (Extract, Transform, Load) process.
 
 
-
-
-
-
-![Uploading image.png…]()
-
-
-
+![dw_architecture](https://github.com/user-attachments/assets/f8f39206-451a-487e-9d73-612bd00d42d2)
 
 
 
