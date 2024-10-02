@@ -68,5 +68,5 @@ i utilize a hybrid data platform architecture combining on-premises and cloud-ba
 ├── README.md               # Project overview
 ├── ETL.sh                  # Shell script for the ETL process
 ├── setup_mysql.sh          # Script for setting up the MySQL server
-├── setup_postgresql.sh     # Script for setting up the PostgreSQL staging warehouse
+├── setuppostgresqldb.sh    # Script for setting up the PostgreSQL staging warehouse
 ├── cronjob_config          # Example configuration for setting up a cron job
