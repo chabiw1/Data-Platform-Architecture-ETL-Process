@@ -1,53 +1,69 @@
-#!/bin/sh
+# Data Platform Architecture - ETL Process
 
-# Load database credentials
-. /path/to/db_credentials.sh
+This project outlines the data platform architecture for SoftCart, an e-commerce company, and provides a detailed overview of how we synchronize data between various databases through an automated ETL (Extract, Transform, Load) process.
 
-# Load the data from the sales_data table in MySQL to a sales.csv file, selecting data not older than 4 hours from the current time.
-mysql -h mysql -P 3306 -u root --password=$MYSQL_PASSWORD --database=sales \
---execute="SELECT rowid, product_id, customer_id, price, quantity, timestamp FROM sales_data WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL 4 HOUR;" \
---batch --silent > /home/project/sales.csv
+## Overview
 
-# Replace tabs with commas to format as CSV
-tr '\t' ',' < /home/project/sales.csv > /home/project/temp_sales_commas.csv
+SoftCart utilizes a hybrid data platform architecture combining on-premises and cloud-based databases to support its e-commerce operations. The architecture facilitates the seamless movement of data from the transactional database to a staging warehouse for transformation before loading it into the production data warehouse. The final production data is used for generating business insights through IBM Cognos Analytics.
 
-# Move the temp file to the original CSV file
-mv /home/project/temp_sales_commas.csv /home/project/sales.csv
+## Tools and Technologies
 
-# Set the PostgreSQL password environment variable
-export PGPASSWORD=$PGPASSWORD
+- **OLTP Database**: MySQL (on-premises) for transactional and catalog data.
+- **Staging Data Warehouse**: PostgreSQL (on-premises) for intermediate data processing.
+- **Production Data Warehouse**: DB2 (cloud-based) for long-term storage and business reporting.
+- **Business Intelligence Dashboard**: IBM Cognos Analytics for reporting and dashboards.
 
-# Load the data into the sales_data table in PostgreSQL
-psql --username=postgres --host=postgres --dbname=sales_new -c "\COPY sales_data(rowid, product_id, customer_id, price, quantity, timestamp) FROM '/home/project/sales.csv' DELIMITER ',' CSV HEADER;"
+## Data Flow and Process
 
-# Remove the sales.csv file after loading it into PostgreSQL
-rm /home/project/sales.csv
+1. **Customer Interactions**: 
+   - Customers interact with SoftCart’s website using various devices (laptops, mobiles, tablets).
+   - All sales transactions and catalog data are stored in the MySQL OLTP database.
 
-# Load the DimDate table with data from sales_data
-psql --username=postgres --host=postgres --dbname=sales_new -c \
-"INSERT INTO DimDate (dateid, year, month, day)
-SELECT DISTINCT
-    EXTRACT(EPOCH FROM timestamp)::bigint AS dateid,
-    EXTRACT(YEAR FROM timestamp) AS year,
-    EXTRACT(MONTH FROM timestamp) AS month,
-    EXTRACT(DAY FROM timestamp) AS day
-FROM sales_data;"
+2. **Data Extraction**:
+   - The data is periodically extracted from the MySQL database to the PostgreSQL staging data warehouse for further processing.
 
-# Load the FactSales table with data from sales_data
-psql --username=postgres --host=postgres --dbname=sales_new -c \
-"INSERT INTO FactSales (rowid, product_id, customer_id, price, total_price)
-SELECT 
-    rowid, 
-    product_id, 
-    customer_id,
-    price,
-    price * quantity AS total_price
-FROM sales_data;"
+3. **Transformation**:
+   - In PostgreSQL, the extracted data undergoes transformation into two tables:
+     - **DimDate**: A dimension table for date-related information.
+     - **FactSales**: A fact table capturing sales transactions with calculated fields such as total sales price.
 
-# Export the DimDate table to a CSV file
-psql --username=postgres --host=postgres --dbname=sales_new -c \
-"\COPY DimDate TO '/home/project/DimDate.csv' DELIMITER ',' CSV HEADER;"
+4. **Loading Data to Production**:
+   - After transformation, the data is exported as CSV files and loaded into the DB2 production warehouse for analysis.
 
-# Export the FactSales table to a CSV file
-psql --username=postgres --host=postgres --dbname=sales_new -c \
-"\COPY FactSales TO '/home/project/FactSales.csv' DELIMITER ',' CSV HEADER;"
+5. **Business Intelligence**:
+   - The BI team connects to DB2 using IBM Cognos Analytics to generate dashboards and reports for key business metrics.
+
+## Automation
+
+- A **shell script (ETL.sh)** is used to automate the entire process of extracting, transforming, and exporting data.
+- A **cron job** is set up to ensure this script runs at regular intervals, keeping the data synchronized between the OLTP, staging, and production warehouses.
+
+## Steps to Set Up
+
+1. **Prepare MySQL Server**:
+   - Start the MySQL server and create a `sales` database.
+   - Load historical and new data from CSV files (`sales_old_data.csv` and `sales_new_data.csv`) into the `sales_data` table.
+
+2. **Set Up PostgreSQL Staging Warehouse**:
+   - Initialize the PostgreSQL server and execute the setup script to create necessary tables.
+
+3. **Automate the ETL Process**:
+   - Use a shell script to automate data extraction from MySQL, transformation in PostgreSQL, and export to CSV files.
+
+4. **Set Up Cron Job**:
+   - Schedule the cron job to ensure the ETL process runs regularly.
+
+5. **BI Dashboards**:
+   - Use IBM Cognos Analytics to create operational dashboards and generate insights from the data in DB2.
+
+## Repository Structure
+
+```bash
+.
+├── README.md               # Project overview
+├── ETL.sh                  # Shell script for the ETL process
+├── setup_mysql.sh          # Script for setting up the MySQL server
+├── setup_postgresql.sh     # Script for setting up the PostgreSQL staging warehouse
+├── cronjob_config          # Example configuration for setting up a cron job
+├── data/                   # Directory for storing input CSV files
+└── output/                 # Directory for storing exported CSV files
