@@ -4,7 +4,7 @@ This project outlines the data platform architecture for an e-commerce company, 
 
 ![dw_architecture](https://github.com/user-attachments/assets/f8f39206-451a-487e-9d73-612bd00d42d2)
 
-🔑 ## Overview
+## 🔑Overview
 
 I utilize a hybrid data platform architecture combining on-premises and cloud-based databases to support its e-commerce operations. The architecture facilitates the seamless movement of data from the transactional database to a staging warehouse for transformation before loading it into the production data warehouse. The final production data is used for generating business insights through IBM Cognos Analytics.
 
