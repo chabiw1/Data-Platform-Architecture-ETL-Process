@@ -74,8 +74,8 @@ SELECT
 FROM sales_data;"
 ```
 - **Load**: Data is exported from PostgreSQL into CSV files (`DimDate.csv` and `FactSales.csv`), which can later be transferred to the DB2 production warehouse.
-  ```
-  # Load data into PostgreSQL sales_data table
+```
+# Load data into PostgreSQL sales_data table
 psql --username=postgres --host=postgres --dbname=sales_new -c "\COPY sales_data(rowid, product_id, customer_id, price, quantity, timestamp) FROM '/home/project/sales.csv' DELIMITER ',' CSV HEADER;"
 
 # Remove the sales.csv file after loading it into PostgreSQL
@@ -88,7 +88,7 @@ psql --username=postgres --host=postgres --dbname=sales_new -c \
 # Export FactSales table to a CSV file
 psql --username=postgres --host=postgres --dbname=sales_new -c \
 "\COPY FactSales TO '/home/project/FactSales.csv' DELIMITER ',' CSV HEADER;"
-  ```
+```
 
 ### 4. **Automation and Cron Job**:
 - A cron job is used to automate the ETL process, ensuring that data is regularly synchronized between MySQL and PostgreSQL, and ultimately to DB2 for analysis.
