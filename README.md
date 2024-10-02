@@ -31,6 +31,7 @@ I utilize a hybrid data platform architecture combining on-premises and cloud-ba
 - The script `setupmysqldb.sh` initializes the MySQL database, creates the `sales_data` table, and loads initial data from two CSV files (`sales_olddata.csv` and `sales_newdata.csv`).
 - Data includes historical transactions and new entries.
 
+
 ### 2. **Setting Up PostgreSQL**:
 - The script `setuppostgresqldb.sh` sets up PostgreSQL as the staging warehouse, creating tables such as `sales_data`, `DimDate`, and `FactSales`.
 - These tables will store data temporarily before moving to the production environment.
