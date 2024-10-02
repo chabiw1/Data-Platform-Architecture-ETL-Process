@@ -1,22 +1,55 @@
 #!/bin/sh
 
-# This startup script does the following
-# Creates a database sales
-# Uses the sales database
-# Creates a table sales_data with fields rowid,productid,customerid,price,quantity and timestamp.
+# Load database credentials
+. /path/to/db_credentials.sh
 
+# Load the data from the sales_data table in MySQL to a sales.csv file, selecting data not older than 4 hours from the current time.
+mysql -h mysql -P 3306 -u root --password=$MYSQL_PASSWORD --database=sales \
+--execute="SELECT rowid, product_id, customer_id, price, quantity, timestamp FROM sales_data WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL 4 HOUR;" \
+--batch --silent > /home/project/sales.csv
 
-mysql --host=mysql --port=3306 --user=root --password=BcXbyVICQWRxVsYUAEmoL9Cn -e "create database sales;
-use sales;drop table if exists sales_data;create table sales_data(rowid int DEFAULT NULL,product_id int DEFAULT NULL,
-customer_id int DEFAULT NULL,price decimal(10,0) DEFAULT NULL,
-quantity int DEFAULT NULL,timestamp timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);"
+# Replace tabs with commas to format as CSV
+tr '\t' ',' < /home/project/sales.csv > /home/project/temp_sales_commas.csv
 
-# Loading data from sales_olddata.csv into sales_data table.This csv consists of data with old timestamp.
+# Move the temp file to the original CSV file
+mv /home/project/temp_sales_commas.csv /home/project/sales.csv
 
-mysql --host=mysql --port=3306 --user=root --password=BcXbyVICQWRxVsYUAEmoL9Cn --local-infile=1 -e "use sales;load data local infile '/home/project/sales_olddata.csv' into table sales_data fields terminated BY ','lines terminated BY '\n';"
+# Set the PostgreSQL password environment variable
+export PGPASSWORD=$PGPASSWORD
 
-# Loading data from sales_newdata.csv into sales_data table.This csv consists of data updated with the current timestamp.
-mysql --host=mysql --port=3306 --user=root --password=BcXbyVICQWRxVsYUAEmoL9Cn --local-infile=1 -e "use sales;load data local infile '/home/project/sales_newdata.csv' into table sales_data fields terminated BY ',' lines terminated BY '\n'(rowid,product_id,customer_id,price, quantity);"
+# Load the data into the sales_data table in PostgreSQL
+psql --username=postgres --host=postgres --dbname=sales_new -c "\COPY sales_data(rowid, product_id, customer_id, price, quantity, timestamp) FROM '/home/project/sales.csv' DELIMITER ',' CSV HEADER;"
 
+# Remove the sales.csv file after loading it into PostgreSQL
+rm /home/project/sales.csv
+
+# Load the DimDate table with data from sales_data
+psql --username=postgres --host=postgres --dbname=sales_new -c \
+"INSERT INTO DimDate (dateid, year, month, day)
+SELECT DISTINCT
+    EXTRACT(EPOCH FROM timestamp)::bigint AS dateid,
+    EXTRACT(YEAR FROM timestamp) AS year,
+    EXTRACT(MONTH FROM timestamp) AS month,
+    EXTRACT(DAY FROM timestamp) AS day
+FROM sales_data;"
+
+# Load the FactSales table with data from sales_data
+psql --username=postgres --host=postgres --dbname=sales_new -c \
+"INSERT INTO FactSales (rowid, product_id, customer_id, price, total_price)
+SELECT 
+    rowid, 
+    product_id, 
+    customer_id,
+    price,
+    price * quantity AS total_price
+FROM sales_data;"
+
+# Export the DimDate table to a CSV file
+psql --username=postgres --host=postgres --dbname=sales_new -c \
+"\COPY DimDate TO '/home/project/DimDate.csv' DELIMITER ',' CSV HEADER;"
+
+# Export the FactSales table to a CSV file
+psql --username=postgres --host=postgres --dbname=sales_new -c \
+"\COPY FactSales TO '/home/project/FactSales.csv' DELIMITER ',' CSV HEADER;"
 
 
